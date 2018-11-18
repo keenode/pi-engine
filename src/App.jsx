@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
 
-import "./App.css";
+import "./App.scss";
 
 import MainLayout from "./layouts/MainLayout/MainLayout";
 import Home from "./containers/Home/Home";
