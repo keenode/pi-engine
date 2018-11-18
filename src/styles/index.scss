@@ -1,5 +1,12 @@
 @import "~reset-css/sass/reset";
+@import "variables";
 
 body {
-  background-color: #1a1a1a;
+  color: $fontColor;
+  font-family: $fontFamily-base;
+  background-color: $bgColor;
+}
+
+a {
+  color: $fontColor;
 }
