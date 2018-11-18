@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import * as THREE from "three";
 
-// Set the scene size.
+import styles from "./WorldRenderer.module.scss";
+
 const CANVAS_WIDTH = window.innerWidth;
 const CANVAS_HEIGHT = window.innerHeight;
-
-// Set some camera attributes.
 const VIEW_ANGLE = 75;
 const ASPECT = CANVAS_WIDTH / CANVAS_HEIGHT;
 const NEAR = 0.1;
@@ -21,63 +20,36 @@ class WorldRenderer extends Component {
     this.scene = new THREE.Scene();
     $container.appendChild(this.renderer.domElement);
 
-    // Add the camera to the scene.
     this.scene.add(this.camera);
 
-    // Set up the sphere vars
-    const RADIUS = 50;
-    const SEGMENTS = 16;
-    const RINGS = 16;
+    this.camera.position.z = 5;
 
-    // create the sphere's material
-    const sphereMaterial = new THREE.MeshLambertMaterial({
-      color: 0xcc0000
-    });
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+    this.cube = new THREE.Mesh(geometry, material);
+    this.scene.add(this.cube);
 
-    // Create a new mesh with
-    // sphere geometry - we will cover
-    // the sphereMaterial next!
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(RADIUS, SEGMENTS, RINGS),
-
-      sphereMaterial
-    );
-
-    // Move the Sphere back in Z so we
-    // can see it.
-    sphere.position.z = -300;
-
-    // Finally, add the sphere to the scene.
-    this.scene.add(sphere);
-
-    // create a point light
     const pointLight = new THREE.PointLight(0xffffff);
-
-    // set its position
     pointLight.position.x = 10;
     pointLight.position.y = 50;
     pointLight.position.z = 130;
-
-    // add to the scene
     this.scene.add(pointLight);
 
-    // Draw!
     this.renderer.render(this.scene, this.camera);
-
-    // Schedule the first frame.
     requestAnimationFrame(this.renderLoop);
   }
 
   renderLoop = () => {
-    // Draw!
-    this.renderer.render(this.scene, this.camera);
-
-    // Schedule the next frame.
     requestAnimationFrame(this.renderLoop);
+
+    this.cube.rotation.x += 0.01;
+    this.cube.rotation.y += 0.01;
+
+    this.renderer.render(this.scene, this.camera);
   };
 
   render() {
-    return <div id="world-renderer" />;
+    return <div id="world-renderer" className={styles.WorldRenderer} />;
   }
 }
 
