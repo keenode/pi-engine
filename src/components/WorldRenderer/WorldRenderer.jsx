@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import * as THREE from "three";
+import Stats from "stats-js";
 
 import styles from "./WorldRenderer.module.scss";
 
@@ -12,13 +13,23 @@ const FAR = 1000;
 
 class WorldRenderer extends Component {
   componentDidMount() {
-    const $container = document.querySelector("#world-renderer");
+    const $canvas = document.querySelector("#world-canvas");
 
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: $canvas,
+      antialias: false
+    });
     this.renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.renderer.setClearColor(0x2a5263, 1.0);
     this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
     this.scene = new THREE.Scene();
-    $container.appendChild(this.renderer.domElement);
+
+    this.stats = new Stats();
+    this.stats.setMode(0);
+    this.stats.domElement.style.position = "absolute";
+    this.stats.domElement.style.left = "0px";
+    this.stats.domElement.style.top = "0px";
+    document.body.appendChild(this.stats.domElement);
 
     this.scene.add(this.camera);
 
@@ -40,16 +51,18 @@ class WorldRenderer extends Component {
   }
 
   renderLoop = () => {
+    this.stats.begin();
     requestAnimationFrame(this.renderLoop);
 
     this.cube.rotation.x += 0.01;
     this.cube.rotation.y += 0.01;
 
     this.renderer.render(this.scene, this.camera);
+    this.stats.end();
   };
 
   render() {
-    return <div id="world-renderer" className={styles.WorldRenderer} />;
+    return <canvas id="world-canvas" className={styles.WorldCanvas} />;
   }
 }
 
