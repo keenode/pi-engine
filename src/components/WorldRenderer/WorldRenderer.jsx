@@ -4,7 +4,7 @@ import Stats from "stats-js";
 
 import styles from "./WorldRenderer.module.scss";
 
-import FirstPersonControls from "first-person-controls";
+// import FirstPersonControls from "first-person-controls";
 
 const CANVAS_WIDTH = window.innerWidth;
 const CANVAS_HEIGHT = window.innerHeight;
@@ -12,6 +12,12 @@ const VIEW_ANGLE = 75;
 const ASPECT = CANVAS_WIDTH / CANVAS_HEIGHT;
 const NEAR = 0.1;
 const FAR = 1000;
+
+const player = {
+  height: 1.0,
+  speed: 0.2,
+  turnSpeed: Math.PI * 0.01
+};
 
 class WorldRenderer extends Component {
   componentDidMount() {
@@ -33,15 +39,24 @@ class WorldRenderer extends Component {
     this.stats.domElement.style.top = "0px";
     document.body.appendChild(this.stats.domElement);
 
-    this.controls = new FirstPersonControls(this.camera);
-    this.controls.lookSpeed = 0.25;
-    this.controls.movementSpeed = 10;
+    // this.controls = new FirstPersonControls(this.camera);
+    // this.controls.lookSpeed = 0.25;
+    // this.controls.movementSpeed = 10;
 
     this.clock = new THREE.Clock(true);
 
     this.scene.add(this.camera);
 
-    // this.camera.position.z = 10;
+    this.camera.position.set(0, player.height, -5);
+    this.camera.lookAt(new THREE.Vector3(0, player.height, 0));
+
+    // Floor
+    const meshFloor = new THREE.Mesh(
+      new THREE.PlaneGeometry(10, 10),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false })
+    );
+    meshFloor.rotation.x = -Math.PI / 2;
+    this.scene.add(meshFloor);
 
     // Cube
     const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -60,14 +75,29 @@ class WorldRenderer extends Component {
     this.scene.add(plane);
 
     const pointLight = new THREE.PointLight(0xffffff);
-    pointLight.position.x = 10;
-    pointLight.position.y = 50;
-    pointLight.position.z = 130;
+    pointLight.position.set(0, 5, 0);
     this.scene.add(pointLight);
 
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.renderLoop);
+
+    // Bind key events
+    this.keyboard = [];
+    window.addEventListener("keydown", this.keyDown);
+    window.addEventListener("keyup", this.keyUp);
   }
+
+  keyDown = event => {
+    console.log("[keyDown]");
+    this.keyboard[event.keyCode] = true;
+    console.log(this.keyboard);
+  };
+
+  keyUp = event => {
+    console.log("[keyUp]");
+    this.keyboard[event.keyCode] = false;
+    console.log(this.keyboard);
+  };
 
   renderLoop = () => {
     this.stats.begin();
@@ -76,7 +106,40 @@ class WorldRenderer extends Component {
     this.cube.rotation.x += 0.01;
     this.cube.rotation.y += 0.01;
 
-    this.controls.update(this.clock.getDelta());
+    if (this.keyboard[87] || this.keyboard[38]) {
+      // W / UP
+      this.camera.position.x -= Math.sin(this.camera.rotation.y) * player.speed;
+      this.camera.position.z += Math.cos(this.camera.rotation.y) * player.speed;
+    }
+    if (this.keyboard[83] || this.keyboard[40]) {
+      // S / DOWN
+      this.camera.position.x += Math.sin(this.camera.rotation.y) * player.speed;
+      this.camera.position.z -= Math.cos(this.camera.rotation.y) * player.speed;
+    }
+    if (this.keyboard[65]) {
+      // A
+      this.camera.position.x +=
+        Math.sin(this.camera.rotation.y + Math.PI / 2) * player.speed;
+      this.camera.position.z -=
+        Math.cos(this.camera.rotation.y + Math.PI / 2) * player.speed;
+    }
+    if (this.keyboard[68]) {
+      // D
+      this.camera.position.x +=
+        Math.sin(this.camera.rotation.y - Math.PI / 2) * player.speed;
+      this.camera.position.z -=
+        Math.cos(this.camera.rotation.y - Math.PI / 2) * player.speed;
+    }
+    if (this.keyboard[37]) {
+      // LEFT
+      this.camera.rotation.y -= Math.PI * player.turnSpeed;
+    }
+    if (this.keyboard[39]) {
+      // RIGHT
+      this.camera.rotation.y += Math.PI * player.turnSpeed;
+    }
+
+    // this.controls.update(this.clock.getDelta());
 
     this.renderer.render(this.scene, this.camera);
     this.stats.end();
