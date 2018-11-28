@@ -62,10 +62,30 @@ class WorldRenderer extends Component {
     window.addEventListener("keyup", this.keyUp);
 
     this.generateMap();
+    this.generateCustomCube();
 
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.renderLoop);
   }
+
+  generateCustomCube = () => {
+    const cubeGroup = new THREE.Group();
+    const sideFront = this.addCubeSide();
+    cubeGroup.add(sideFront);
+    cubeGroup.position.set(-5, 0, 0);
+    this.scene.add(cubeGroup);
+  };
+
+  addCubeSide = () => {
+    return new THREE.Mesh(
+      new THREE.PlaneBufferGeometry(tileSize, tileSize, 1, 1),
+      new THREE.MeshLambertMaterial({
+        color: 0xffff00,
+        wireframe: false,
+        side: THREE.DoubleSide
+      })
+    );
+  };
 
   generateMap = () => {
     for (let x = 0; x < mapFloor.length; x += 1) {
