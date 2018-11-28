@@ -70,17 +70,34 @@ class WorldRenderer extends Component {
 
   generateCustomCube = () => {
     const cubeGroup = new THREE.Group();
-    const sideFront = this.addCubeSide();
+
+    const sideFront = this.makeSideMesh(0xffff00);
+    sideFront.position.set(0, tileSize / 2, -tileSize / 2);
+
+    const sideBottom = this.makeSideMesh(0xff0000);
+    sideBottom.rotation.x = Math.PI / 2;
+
+    const sideTop = this.makeSideMesh(0x00ff00);
+    sideTop.position.set(0, tileSize, 0);
+    sideTop.rotation.x = Math.PI / 2;
+
+    const sideBack = this.makeSideMesh(0x0000ff);
+    sideBack.position.set(0, tileSize / 2, tileSize / 2);
+
     cubeGroup.add(sideFront);
+    cubeGroup.add(sideBottom);
+    cubeGroup.add(sideTop);
+    cubeGroup.add(sideBack);
+
     cubeGroup.position.set(-5, 0, 0);
     this.scene.add(cubeGroup);
   };
 
-  addCubeSide = () => {
+  makeSideMesh = (color = 0xffffff) => {
     return new THREE.Mesh(
       new THREE.PlaneBufferGeometry(tileSize, tileSize, 1, 1),
       new THREE.MeshLambertMaterial({
-        color: 0xffff00,
+        color,
         wireframe: false,
         side: THREE.DoubleSide
       })
