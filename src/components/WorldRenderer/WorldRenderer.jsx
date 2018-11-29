@@ -56,8 +56,11 @@ class WorldRenderer extends Component {
     this.renderer.setClearColor(0x6cc9ff, 1.0);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
     this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+
     this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0xffffff, 0.05);
 
     this.stats = new Stats();
     this.stats.setMode(0);
@@ -95,29 +98,35 @@ class WorldRenderer extends Component {
     sideFront.position.set(tileSize / 2, tileSize / 2, 0);
     sideFront.rotation.y = Math.PI / 2;
     sideFront.receiveShadow = true;
+    sideFront.castShadow = true;
 
     const sideBack = this.makeSideMesh(0x00ffff);
     sideBack.position.set(-tileSize / 2, tileSize / 2, 0);
     sideBack.rotation.y = -Math.PI / 2;
     sideBack.receiveShadow = true;
+    sideBack.castShadow = true;
 
     const sideTop = this.makeSideMesh(0x00ff00);
     sideTop.position.set(0, tileSize, 0);
     sideTop.rotation.x = -Math.PI / 2;
     sideTop.receiveShadow = true;
+    sideTop.castShadow = true;
 
     const sideBottom = this.makeSideMesh(0xff0000);
     sideBottom.rotation.x = Math.PI / 2;
     sideBottom.receiveShadow = true;
+    sideBottom.castShadow = true;
 
     const sideLeft = this.makeSideMesh(0xffff00);
     sideLeft.rotation.x = Math.PI;
     sideLeft.position.set(0, tileSize / 2, -tileSize / 2);
     sideLeft.receiveShadow = true;
+    sideLeft.castShadow = true;
 
     const sideRight = this.makeSideMesh(0x0000ff);
     sideRight.position.set(0, tileSize / 2, tileSize / 2);
     sideRight.receiveShadow = true;
+    sideRight.castShadow = true;
 
     cubeGroup.add(sideFront);
     cubeGroup.add(sideBack);
@@ -172,18 +181,34 @@ class WorldRenderer extends Component {
     this.cube.castShadow = true;
     this.scene.add(this.cube);
 
-    // Point Light
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(0, 5, 5);
-    pointLight.castShadow = true;
-    pointLight.shadow.mapSize.width = 2048;
-    pointLight.shadow.mapSize.height = 2048;
-    pointLight.shadow.camera.near = 0.5;
-    pointLight.shadow.camera.far = 500;
-    this.scene.add(pointLight);
+    // // Point Light
+    // const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    // pointLight.position.set(0, 5, 5);
+    // pointLight.castShadow = true;
+    // pointLight.shadow.mapSize.width = 2048;
+    // pointLight.shadow.mapSize.height = 2048;
+    // pointLight.shadow.camera.near = 0.5;
+    // pointLight.shadow.camera.far = 500;
+    // this.scene.add(pointLight);
+
+    // Sunlight
+    const directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.position.set(-40, 60, -25);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.camera.near = 2;
+    directionalLight.shadow.camera.far = 200;
+    directionalLight.shadow.camera.left = -50;
+    directionalLight.shadow.camera.right = 50;
+    directionalLight.shadow.camera.top = 50;
+    directionalLight.shadow.camera.bottom = -50;
+    directionalLight.distance = 0;
+    directionalLight.intensity = 1;
+    directionalLight.shadow.mapSize.height = 16384;
+    directionalLight.shadow.mapSize.width = 16384;
+    this.scene.add(directionalLight);
 
     // Ambient Light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+    const ambientLight = new THREE.AmbientLight(0x6cc9ff, 0.5);
     this.scene.add(ambientLight);
   };
 
