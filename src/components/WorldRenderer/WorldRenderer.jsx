@@ -6,6 +6,7 @@ import styles from "./WorldRenderer.module.scss";
 
 // import FirstPersonControls from "first-person-controls";
 // view-source:https://stemkoski.github.io/Three.js/Collision-Detection.html
+// https://www.reddit.com/r/threejs/comments/5du10e/getting_the_direction_of_a_raybased_collision/
 
 const CANVAS_WIDTH = window.innerWidth;
 const CANVAS_HEIGHT = window.innerHeight;
@@ -46,7 +47,7 @@ const level1 = [
 const mapGeometry = [levelNeg1, level0, level1];
 
 class WorldRenderer extends Component {
-  collidableMeshList = [];
+  collidableMeshes = [];
 
   componentDidMount() {
     const $canvas = document.querySelector("#world-canvas");
@@ -80,17 +81,17 @@ class WorldRenderer extends Component {
 
     this.scene.add(this.camera);
 
-    this.camera.position.set(0, player.height, 0);
+    this.camera.position.set(0, player.height, 1);
     this.camera.lookAt(new THREE.Vector3(0, player.height, 5));
 
     // Create player collision mesh
     this.playerMesh = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(1, 2.5, 1),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true })
+      new THREE.BoxGeometry(1, 2.5, 1),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false })
     );
-    this.playerMesh.position.set(0, 1.25, 0);
+    this.playerMesh.position.set(0, 1.25, 1);
     this.scene.add(this.playerMesh);
-    // this.collidableMeshList.push(playerMesh);
+    // this.collidableMeshes.push(playerMesh);
 
     // Bind key events
     this.keyboard = [];
@@ -146,6 +147,14 @@ class WorldRenderer extends Component {
     cubeGroup.add(sideBottom);
     cubeGroup.add(sideLeft);
     cubeGroup.add(sideRight);
+
+    const collidableMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(tileSize, tileSize, tileSize),
+      new THREE.MeshBasicMaterial({ wireframe: true })
+    );
+    collidableMesh.position.y = tileSize / 2;
+    cubeGroup.add(collidableMesh);
+    this.collidableMeshes.push(collidableMesh);
 
     cubeGroup.position.set(x * tileSize, level * tileSize, y * tileSize);
     return cubeGroup;
@@ -232,6 +241,47 @@ class WorldRenderer extends Component {
     this.keyboard[event.keyCode] = false;
   };
 
+  checkCollisions = () => {
+    // return false;
+    // collision detection:
+    //   determines if any of the rays from the cube's origin to each vertex
+    //		intersects any face of a mesh in the array of target meshes
+    //   for increased collision accuracy, add more vertices to the cube;
+    //		for example, new THREE.CubeGeometry( 64, 64, 64, 8, 8, 8, wireMaterial )
+    //   HOWEVER: when the origin of the ray is within the target mesh, collisions do not occur
+    const originPoint = this.playerMesh.position.clone();
+    for (
+      let vertexIndex = 0;
+      vertexIndex < this.playerMesh.geometry.vertices.length;
+      vertexIndex++
+    ) {
+      const localVertex = this.playerMesh.geometry.vertices[
+        vertexIndex
+      ].clone();
+      const globalVertex = localVertex.applyMatrix4(this.playerMesh.matrix);
+      const directionVector = globalVertex.sub(this.playerMesh.position);
+
+      const ray = new THREE.Raycaster(
+        originPoint,
+        directionVector.clone().normalize()
+      );
+      const collisionResults = ray.intersectObjects(this.collidableMeshes);
+      if (
+        collisionResults.length > 0 &&
+        collisionResults[0].distance < directionVector.length()
+      ) {
+        const force =
+          (directionVector.length() - collisionResults[0].distance) /
+          this.playerMesh.geometry.vertices.length;
+        const rayDir = ray.ray.direction;
+        const collisionAngle = Math.atan2(rayDir.x, rayDir.z);
+        console.log(collisionAngle);
+        this.camera.position.z -= force * Math.cos(collisionAngle);
+        this.camera.position.x -= force * Math.sin(collisionAngle);
+      }
+    }
+  };
+
   renderLoop = () => {
     this.stats.begin();
     requestAnimationFrame(this.renderLoop);
@@ -272,7 +322,14 @@ class WorldRenderer extends Component {
       this.camera.rotation.y += Math.PI * player.turnSpeed;
     }
 
+    this.playerMesh.position.set(
+      this.camera.position.x,
+      this.camera.position.y,
+      this.camera.position.z
+    );
+
     // this.controls.update(this.clock.getDelta());
+    this.checkCollisions();
 
     this.renderer.render(this.scene, this.camera);
     this.stats.end();
