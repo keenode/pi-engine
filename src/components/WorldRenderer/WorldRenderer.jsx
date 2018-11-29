@@ -91,13 +91,14 @@ class WorldRenderer extends Component {
   makeCube = (x, y, level) => {
     const cubeGroup = new THREE.Group();
 
-    const sideFront = this.makeSideMesh(0xffff00);
-    sideFront.rotation.x = Math.PI;
-    sideFront.position.set(0, tileSize / 2, -tileSize / 2);
+    const sideFront = this.makeSideMesh(0xff00ff);
+    sideFront.position.set(tileSize / 2, tileSize / 2, 0);
+    sideFront.rotation.y = Math.PI / 2;
     sideFront.receiveShadow = true;
 
-    const sideBack = this.makeSideMesh(0x0000ff);
-    sideBack.position.set(0, tileSize / 2, tileSize / 2);
+    const sideBack = this.makeSideMesh(0x00ffff);
+    sideBack.position.set(-tileSize / 2, tileSize / 2, 0);
+    sideBack.rotation.y = -Math.PI / 2;
     sideBack.receiveShadow = true;
 
     const sideTop = this.makeSideMesh(0x00ff00);
@@ -109,22 +110,21 @@ class WorldRenderer extends Component {
     sideBottom.rotation.x = Math.PI / 2;
     sideBottom.receiveShadow = true;
 
-    const sideRight = this.makeSideMesh(0x00ffff);
-    sideRight.position.set(-tileSize / 2, tileSize / 2, 0);
-    sideRight.rotation.y = -Math.PI / 2;
-    sideRight.receiveShadow = true;
-
-    const sideLeft = this.makeSideMesh(0xff00ff);
-    sideLeft.position.set(tileSize / 2, tileSize / 2, 0);
-    sideLeft.rotation.y = Math.PI / 2;
+    const sideLeft = this.makeSideMesh(0xffff00);
+    sideLeft.rotation.x = Math.PI;
+    sideLeft.position.set(0, tileSize / 2, -tileSize / 2);
     sideLeft.receiveShadow = true;
+
+    const sideRight = this.makeSideMesh(0x0000ff);
+    sideRight.position.set(0, tileSize / 2, tileSize / 2);
+    sideRight.receiveShadow = true;
 
     cubeGroup.add(sideFront);
     cubeGroup.add(sideBack);
     cubeGroup.add(sideTop);
     cubeGroup.add(sideBottom);
-    cubeGroup.add(sideRight);
     cubeGroup.add(sideLeft);
+    cubeGroup.add(sideRight);
 
     cubeGroup.position.set(x * tileSize, level * tileSize, y * tileSize);
     return cubeGroup;
