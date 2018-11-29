@@ -5,6 +5,7 @@ import Stats from "stats-js";
 import styles from "./WorldRenderer.module.scss";
 
 // import FirstPersonControls from "first-person-controls";
+// view-source:https://stemkoski.github.io/Three.js/Collision-Detection.html
 
 const CANVAS_WIDTH = window.innerWidth;
 const CANVAS_HEIGHT = window.innerHeight;
@@ -45,6 +46,8 @@ const level1 = [
 const mapGeometry = [levelNeg1, level0, level1];
 
 class WorldRenderer extends Component {
+  collidableMeshList = [];
+
   componentDidMount() {
     const $canvas = document.querySelector("#world-canvas");
 
@@ -79,6 +82,15 @@ class WorldRenderer extends Component {
 
     this.camera.position.set(0, player.height, 0);
     this.camera.lookAt(new THREE.Vector3(0, player.height, 5));
+
+    // Create player collision mesh
+    this.playerMesh = new THREE.Mesh(
+      new THREE.BoxBufferGeometry(1, 2.5, 1),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true })
+    );
+    this.playerMesh.position.set(0, 1.25, 0);
+    this.scene.add(this.playerMesh);
+    // this.collidableMeshList.push(playerMesh);
 
     // Bind key events
     this.keyboard = [];
