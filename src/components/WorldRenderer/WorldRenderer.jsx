@@ -18,7 +18,8 @@ const FAR = 1000;
 const player = {
   height: 2.0,
   speed: 0.2,
-  turnSpeed: Math.PI * 0.01
+  turnSpeed: Math.PI * 0.01,
+  isFalling: true
 };
 
 const tileSize = 4.0;
@@ -270,14 +271,21 @@ class WorldRenderer extends Component {
         collisionResults.length > 0 &&
         collisionResults[0].distance < directionVector.length()
       ) {
-        const force =
-          (directionVector.length() - collisionResults[0].distance) /
-          this.playerMesh.geometry.vertices.length;
-        const rayDir = ray.ray.direction;
-        const collisionAngle = Math.atan2(rayDir.x, rayDir.z);
-        console.log(collisionAngle);
-        this.camera.position.z -= force * Math.cos(collisionAngle);
-        this.camera.position.x -= force * Math.sin(collisionAngle);
+        // Collided!
+        console.log("collide!");
+        // const force =
+        //   (directionVector.length() - collisionResults[0].distance) /
+        //   this.playerMesh.geometry.vertices.length;
+        // const rayDir = ray.ray.direction;
+        // const collisionAngle = Math.atan2(rayDir.x, rayDir.z);
+        // this.camera.position.z -= force * Math.cos(collisionAngle);
+        // this.camera.position.x -= force * Math.sin(collisionAngle);
+        console.log(
+          "collisionResults: ",
+          collisionResults[0].object.position.y
+        );
+        this.camera.position.y = collisionResults[0].object.position.y;
+        player.isFalling = false;
       }
     }
   };
@@ -320,6 +328,16 @@ class WorldRenderer extends Component {
     if (this.keyboard[39]) {
       // RIGHT
       this.camera.rotation.y += Math.PI * player.turnSpeed;
+    }
+    if (this.keyboard[32]) {
+      // Space
+      player.isFalling = true;
+      this.camera.position.y += 1.0;
+    }
+
+    // Gravity
+    if (player.isFalling) {
+      this.camera.position.y -= 0.1;
     }
 
     this.playerMesh.position.set(
